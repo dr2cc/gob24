@@ -1,0 +1,75 @@
+package app
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"log"
+	"os"
+	"time"
+
+	b24 "github.com/bitrix24/b24gosdk"
+	"github.com/dr2cc/gob24/internal/bitrix"
+)
+
+// Тщательно описываем структуру ответа под метод catalog.catalog.list.
+// Поля названы в camelCase, так как новый модуль catalog возвращает JSON именно в таком регистре.
+type CatalogItem struct {
+	ID       int    `json:"id"`
+	IblockID int    `json:"iblockId"`
+	Name     string `json:"name"`
+}
+
+type CatalogData struct {
+	Catalogs []CatalogItem `json:"catalogs"`
+}
+
+func Run() error {
+	// Инициализируем клиент с проверкой переменной окружения
+	webhookURL := os.Getenv("B24_WEBHOOK_URL")
+	if webhookURL == "" {
+		log.Fatal("❌ Ошибка: переменная окружения B24_WEBHOOK_URL не задана")
+	}
+	client := b24.NewClient(webhookURL)
+
+	// Создаем контекст с таймаутом для безопасного сетевого запроса
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	fmt.Println("⏳ Отправка запроса в Битрикс24 для получения списка каталогов...")
+
+	// 1. Вызываем универсальную функцию получения списка
+	catalogList, err := bitrix.FetchList[CatalogData](ctx, client, "catalog.catalog.list", b24.Params{
+		"select": []string{"id", "iblockId", "name"},
+	})
+
+	// 2. ОБРАБОТКА ОШИБОК СЕТИ И API БИТРИКС24
+	if err != nil {
+		// Проверяем, не случился ли таймаут контекста
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+			fmt.Println("❌ Ошибка: Время ожидания ответа от Битрикс24 истекло (Таймаут)")
+			return nil
+		}
+		// Если произошла любая другая ошибка (например, неверный URL или не хватает прав catalog)
+		fmt.Printf("❌ Не удалось получить список каталогов. Подробности: %v\n", err)
+		return nil
+	}
+
+	// 3. ПРОВЕРКА НА ПУСТОЙ РЕЗУЛЬТАТ
+	// Облако может ответить успешно (код 200), но вернуть пустой массив, если каталоги еще не созданы
+	if len(catalogList.Catalogs) == 0 {
+		fmt.Println("⚠️ Внимание: Битрикс24 вернул успешный ответ, но список торговых каталогов пуст.")
+		return nil
+	}
+
+	// 4. ВЫВОД ИНФОРМАЦИИ ОБ IBLOCK_ID В КОНСОЛЬ
+	fmt.Println("\n✅ Данные успешно получены!")
+	fmt.Println("==================================================")
+	for i, cat := range catalogList.Catalogs {
+		fmt.Printf("[%d] Каталог: \"%s\"\n", i+1, cat.Name)
+		fmt.Printf("    ID инфоблока (iblockId): %d  👈 ИСПОЛЬЗУЙТЕ ДЛЯ СИНХРОНИЗАЦИИ\n", cat.IblockID)
+		fmt.Printf("    ID каталога (id):       %d\n", cat.ID)
+		fmt.Println("--------------------------------------------------")
+	}
+	return nil
+}
