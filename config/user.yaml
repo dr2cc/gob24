@@ -1,0 +1,9 @@
+webhook: "https://b24-c74vn3.bitrix24.ru/rest/1/73x59n2yr79kfv4n/"
+email: "van.ivanov@mail.ru"
+name: "ван"
+last_name: "ванов"
+work_position: "Менеджер по продажам"
+uf_department:
+  - 1
+
+# webhook: "https://metplus.bitrix24.ru/rest/10/30hm783vkfz2m86j/"

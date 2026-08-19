@@ -6,18 +6,19 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 
 	keyboard "github.com/eiannone/keyboard"
+	"go.yaml.in/yaml/v2"
 )
 
 // Структура запроса с учетом специфики Битрикс24
 type BitrixUserFields struct {
-	Email        string `json:"EMAIL"`
-	Name         string `json:"NAME"`
-	LastName     string `json:"LAST_NAME"`
-	WorkPosition string `json:"WORK_POSITION,omitempty"` // Должность
-	UFDepartment []int  `json:"UF_DEPARTMENT"`           // Массив ID отделов (например, [1])
+	Webhook      string `json:"WEBHOOK" yaml:"webhook"`
+	Email        string `json:"EMAIL" yaml:"email"`
+	Name         string `json:"NAME" yaml:"name"`
+	LastName     string `json:"LAST_NAME" yaml:"last_name"`
+	WorkPosition string `json:"WORK_POSITION,omitempty" yaml:"work_position"` // Должность
+	UFDepartment []int  `json:"UF_DEPARTMENT" yaml:"uf_department"`           // Массив ID отделов (например, [1])
 }
 
 // Структура для разбора ЛЮБОГО ответа от Битрикс24
@@ -27,24 +28,41 @@ type BitrixResponse struct {
 	ErrorDescription string `json:"error_description"` // Понятное описание ошибки
 }
 
-func UserAdd() {
+// Функция для чтения данных из YAML файла
+func LoadUserFromYAML(fileBytes []byte) (BitrixUserFields, error) {
+	var employee BitrixUserFields
+
+	// Декодируем YAML в структуру
+	err := yaml.Unmarshal(fileBytes, &employee)
+	if err != nil {
+		return employee, fmt.Errorf("ошибка разбора YAML: %w", err)
+	}
+
+	// 3. Валидация обязательного поля
+	if employee.Email == "" {
+		return employee, fmt.Errorf("в файле конфигурации не указан обязательный email")
+	}
+
+	return employee, nil
+}
+
+func UserAdd(fileBytes []byte) {
 	method := "user.add"
-	webhook := os.Getenv("B24_WEBHOOK_URL")
+
+	employee, err := LoadUserFromYAML(fileBytes)
+	if err != nil {
+		fmt.Printf("Ошибка: не удалось LoadUserFromYAML: %v\n", err)
+		return
+	}
+
+	// webhook := os.Getenv("B24_WEBHOOK_URL")
+	webhook := employee.Webhook
+
 	// Если в конце нет слэша, добавляем его сами
 	if webhook[len(webhook)-1] != '/' {
 		webhook += "/"
 	}
 	url := webhook + method
-
-	// TODO: вынести из кода
-	// Заполняем данные сотрудника
-	employee := BitrixUserFields{
-		Email:        "tmail99@list.ru",
-		Name:         "Петр",
-		LastName:     "Петров",
-		WorkPosition: "Менеджер по продажам",
-		UFDepartment: []int{1},
-	}
 
 	// TODO: выделить в отдельную функцию
 	// === БЛОК ПРОВЕРКИ И ПОДТВЕРЖДЕНИЯ ===
