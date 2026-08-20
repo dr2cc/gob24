@@ -11,23 +11,6 @@ import (
 	"go.yaml.in/yaml/v2"
 )
 
-// Структура запроса с учетом специфики Битрикс24
-type BitrixUserFields struct {
-	Webhook      string `json:"WEBHOOK" yaml:"webhook"`
-	Email        string `json:"EMAIL" yaml:"email"`
-	Name         string `json:"NAME" yaml:"name"`
-	LastName     string `json:"LAST_NAME" yaml:"last_name"`
-	WorkPosition string `json:"WORK_POSITION,omitempty" yaml:"work_position"` // Должность
-	UFDepartment []int  `json:"UF_DEPARTMENT" yaml:"uf_department"`           // Массив ID отделов (например, [1])
-}
-
-// Структура для разбора ЛЮБОГО ответа от Битрикс24
-type BitrixResponse struct {
-	Result           int    `json:"result"`            // Сюда запишется ID, если всё ок
-	ErrorType        string `json:"error"`             // Код ошибки (например, ERROR_USER_EMAIL_ALREADY_EXISTS)
-	ErrorDescription string `json:"error_description"` // Понятное описание ошибки
-}
-
 // Функция для чтения данных из YAML файла
 func LoadUserFromYAML(fileBytes []byte) (BitrixUserFields, error) {
 	var employee BitrixUserFields
@@ -46,7 +29,7 @@ func LoadUserFromYAML(fileBytes []byte) (BitrixUserFields, error) {
 	return employee, nil
 }
 
-func UserAdd(fileBytes []byte) {
+func UserAdd(fileBytes []byte, webhook string) {
 	method := "user.add"
 
 	employee, err := LoadUserFromYAML(fileBytes)
@@ -56,7 +39,6 @@ func UserAdd(fileBytes []byte) {
 	}
 
 	// webhook := os.Getenv("B24_WEBHOOK_URL")
-	webhook := employee.Webhook
 
 	// Если в конце нет слэша, добавляем его сами
 	if webhook[len(webhook)-1] != '/' {

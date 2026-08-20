@@ -4,20 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 
 	b24 "github.com/bitrix24/b24gosdk"
 	"github.com/dr2cc/gob24/internal/bitrix"
 )
 
-type CatalogItem struct {
-	ID       int    `json:"id"`
-	IblockID int    `json:"iblockId"`
-	Name     string `json:"name"`
-}
-
-func Catalog() error {
-	client := b24.NewClient(os.Getenv("B24_WEBHOOK_URL"))
+func Catalog(webhookURL string) error {
+	client := b24.NewClient(webhookURL)
 	ctx := context.Background()
 
 	fmt.Println("⏳ Запрашиваем список торговых каталогов...")
