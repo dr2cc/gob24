@@ -44,7 +44,7 @@ func Catalog(webhookURL string) error {
 	res, err := client.Core().Call(ctx, "catalog.product.add", b24.Params{
 		"fields": b24.Params{
 			"iblockId":       24,
-			"name":           "Товар - 17.08.2026",
+			"name":           "АнтиКвар",
 			"active":         "Y",
 			"barcodeMulti":   "Y",
 			"canBuyZero":     "Y",
@@ -69,7 +69,7 @@ func Catalog(webhookURL string) error {
 			"previewText":        "",
 			"previewTextType":    "text",
 			"purchasingCurrency": "RUB",
-			"purchasingPrice":    1000,
+			"purchasingPrice":    1111,
 			"quantity":           10,
 			"quantityReserved":   1,
 			"quantityTrace":      "Y",

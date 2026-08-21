@@ -8,6 +8,8 @@ require (
 )
 
 require (
+	github.com/Marlliton/slogpretty v0.1.3
+	github.com/caarlos0/env/v11 v11.4.1
 	github.com/eiannone/keyboard v0.0.0-20220611211555-0d226195f203
 	go.yaml.in/yaml/v2 v2.4.4
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect

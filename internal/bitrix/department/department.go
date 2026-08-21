@@ -48,7 +48,7 @@ func (fi *FlexInt) UnmarshalJSON(b []byte) error {
 
 func DepartmentList(webhook string) error {
 	method := "department.get"
-	// webhook := os.Getenv("B24_WEBHOOK_URL")
+
 	if webhook == "" {
 		return fmt.Errorf("переменная окружения B24_WEBHOOK_URL не задана")
 	}

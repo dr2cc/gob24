@@ -6,24 +6,29 @@ import (
 	"os"
 
 	"github.com/dr2cc/gob24/internal/app"
-	"github.com/joho/godotenv"
+	"github.com/dr2cc/gob24/internal/config"
 )
 
 func main() {
-	// Загружаем переменные окружения из файла .env в корне
-	if err := godotenv.Load(); err != nil {
-		log.Fatalf("Error loading env variables: %s", err.Error())
-	}
+	// // Загружаем переменные окружения из файла .env в корне
+	// if err := godotenv.Load(); err != nil {
+	// 	log.Fatalf("Error loading env variables: %s", err.Error())
+	// }
 
-	// TODO: вынести в config
-	// Инициализируем клиент с проверкой переменной окружения
-	webhookURL := os.Getenv("B24_WEBHOOK_URL")
-	if webhookURL == "" {
-		log.Fatal("❌ Ошибка: переменная окружения B24_WEBHOOK_URL не задана")
+	// // TODO: вынести в config
+	// // Инициализируем клиент с проверкой переменной окружения
+	// webhookURL := os.Getenv("B24_WEBHOOK_URL")
+	// if webhookURL == "" {
+	// 	log.Fatal("❌ Ошибка: переменная окружения B24_WEBHOOK_URL не задана")
+	// }
+
+	cfg, err := config.New()
+	if err != nil {
+		log.Fatalf("Config error: %s", err)
 	}
 
 	// Run
-	if err := app.Run(webhookURL); err != nil {
+	if err := app.Run(cfg); err != nil {
 		// Более сложная обработка ошибки
 		// для дальнейшего внедрения graceful shutdown
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)

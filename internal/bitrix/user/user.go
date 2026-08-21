@@ -38,8 +38,6 @@ func UserAdd(fileBytes []byte, webhook string) {
 		return
 	}
 
-	// webhook := os.Getenv("B24_WEBHOOK_URL")
-
 	// Если в конце нет слэша, добавляем его сами
 	if webhook[len(webhook)-1] != '/' {
 		webhook += "/"
