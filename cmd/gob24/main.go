@@ -10,18 +10,6 @@ import (
 )
 
 func main() {
-	// // Загружаем переменные окружения из файла .env в корне
-	// if err := godotenv.Load(); err != nil {
-	// 	log.Fatalf("Error loading env variables: %s", err.Error())
-	// }
-
-	// // TODO: вынести в config
-	// // Инициализируем клиент с проверкой переменной окружения
-	// webhookURL := os.Getenv("B24_WEBHOOK_URL")
-	// if webhookURL == "" {
-	// 	log.Fatal("❌ Ошибка: переменная окружения B24_WEBHOOK_URL не задана")
-	// }
-
 	cfg, err := config.New()
 	if err != nil {
 		log.Fatalf("Config error: %s", err)

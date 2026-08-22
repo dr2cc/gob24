@@ -2,11 +2,14 @@ package department
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strconv"
+
+	"github.com/dr2cc/gob24/internal/logger"
 )
 
 // FlexInt — кастомный "умный" тип, который умеет парсить из JSON как строки так и числа
@@ -46,8 +49,12 @@ func (fi *FlexInt) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func DepartmentList(webhook string) error {
+func DepartmentList(ctx context.Context, webhook string) error {
 	method := "department.get"
+
+	// Получаем логгер из контекста
+	log := logger.LoggerFromContext(ctx)
+	log.Info("Получили логгер из контекста. Пока (22.08.26) все!")
 
 	if webhook == "" {
 		return fmt.Errorf("переменная окружения B24_WEBHOOK_URL не задана")

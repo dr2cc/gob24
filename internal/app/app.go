@@ -1,15 +1,16 @@
 package app
 
 import (
+	"context"
 	"fmt"
-	"log/slog"
 	"os"
 
 	"github.com/dr2cc/gob24/internal/bitrix/catalog"
 	"github.com/dr2cc/gob24/internal/bitrix/department"
 	"github.com/dr2cc/gob24/internal/bitrix/user"
 	"github.com/dr2cc/gob24/internal/config"
-	"github.com/dr2cc/gob24/internal/lib/logger/sl"
+	"github.com/dr2cc/gob24/internal/logger"
+	"github.com/dr2cc/gob24/internal/logger/sl"
 )
 
 // Функция для печати общей справки
@@ -26,9 +27,24 @@ func printGeneralUsage() {
 }
 
 func Run(cfg *config.Config) error {
+	// // "Тупое" объявление логгера
 	log := sl.SetupLogger(cfg.Env)
-	slog.SetDefault(log)
-	log.Info("starting application", slog.String("env", cfg.Env))
+	// slog.SetDefault(log)
+	// log.Info("starting application", slog.String("env", cfg.Env))
+
+	// "Go way" объявление логгера, передача в контексте.
+	// 1. Создаем ваш настроенный логгер (например, JSON для продакшена)
+	// log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
+	// 2. Кладем его в контекст
+	ctx := logger.ContextWithLogger(context.Background(), log)
+
+	// // 3. Передаем контекст в функцию
+	// err := DepartmentList(ctx, "https://my-bitrix-webhook.com")
+	// if err != nil {
+	// 	// Ошибку логируем здесь, на самом верхнем уровне!
+	// 	log.Error("Приложение завершилось с ошибкой", "error", err)
+	// }
 
 	// // Сейчас (17.08.2026) создаю client и ctx непосредственно в catalog.Catalog()
 	// client := b24.NewClient(webhookURL)
@@ -57,10 +73,17 @@ func Run(cfg *config.Config) error {
 		fmt.Println("Запуск модуля: Каталог товаров")
 		catalog.Catalog(cfg.WebhookURL)
 	case "depts":
-		// Новая команда для просмотра структуры
-		if err := department.DepartmentList(cfg.WebhookURL); err != nil {
-			// fmt.Fprintf(os.Stderr, "Ошибка: %v\n", err)
-			log.Error("Ошибка:", "err", err)
+		// // Новая команда для просмотра структуры
+		// if err := department.DepartmentList(cfg.WebhookURL); err != nil {
+		// 	// fmt.Fprintf(os.Stderr, "Ошибка: %v\n", err)
+		// 	log.Error("Ошибка:", "err", err)
+		// }
+
+		// 3. Передаем контекст в функцию
+		err := department.DepartmentList(ctx, cfg.WebhookURL)
+		if err != nil {
+			// Ошибку логируем здесь, на самом верхнем уровне!
+			log.Error("Обращение к DepartmentList завершилось с ошибкой", "error", err)
 		}
 	default:
 		// // Если введено что-то неизвестное, выводим ошибку и общую справку
